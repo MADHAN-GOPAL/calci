@@ -1,0 +1,21 @@
+h1
+{
+    color:blue;
+    background color:black;
+}
+button{
+    color:black;
+    background color:blue;
+    border: 1xp solid red;
+    border-radius: 5px;
+    padding: 5px;
+    margin: 3px;
+    transition: transform linear 0.5s;
+}
+
+button:hover{
+    font-weight:bold;
+    padding: 5px 3.5px 5px 3.5px;
+    outline: 1px solid green;
+    transform: rotate(360deg);
+}

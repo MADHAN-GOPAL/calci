@@ -1,0 +1,141 @@
+import React, { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
+const FILTERS = {
+  ALL: "all",
+  COMPLETED: "completed",
+  PENDING: "pending",
+};
+
+export default function App() {
+  const [task, setTask] = useState("");
+  const [tasks, setTasks] = useState([]);
+  const [filter, setFilter] = useState(FILTERS.ALL);
+
+  // Load from localStorage
+  useEffect(() => {
+    const savedTasks = JSON.parse(localStorage.getItem("todos")) || [];
+    setTasks(savedTasks);
+  }, []);
+
+  // Save to localStorage
+  useEffect(() => {
+    localStorage.setItem("todos", JSON.stringify(tasks));
+  }, [tasks]);
+
+  const addTask = () => {
+    if (!task.trim()) return;
+    setTasks([
+      ...tasks,
+      { id: Date.now(), text: task, completed: false },
+    ]);
+    setTask("");
+  };
+
+  const toggleTask = (id) => {
+    setTasks(
+      tasks.map((t) =>
+        t.id === id ? { ...t, completed: !t.completed } : t
+      )
+    );
+  };
+
+  const deleteTask = (id) => {
+    setTasks(tasks.filter((t) => t.id !== id));
+  };
+
+  const filteredTasks = tasks.filter((t) => {
+    if (filter === FILTERS.COMPLETED) return t.completed;
+    if (filter === FILTERS.PENDING) return !t.completed;
+    return true;
+  });
+
+  return (
+    <div style={styles.container}>
+      <h1>📝 To-Do App</h1>
+
+      {/* Input */}
+      <div style={styles.inputBox}>
+        <input
+          value={task}
+          onChange={(e) => setTask(e.target.value)}
+          placeholder="Enter task..."
+          style={styles.input}
+        />
+        <button onClick={addTask} style={styles.addBtn}>Add</button>
+      </div>
+
+      {/* Filters */}
+      <div style={styles.filters}>
+        {Object.values(FILTERS).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            style={{
+              ...styles.filterBtn,
+              background: filter === f ? "#4f46e5" : "#e5e7eb",
+              color: filter === f ? "#fff" : "#000",
+            }}
+          >
+            {f.toUpperCase()}
+          </button>
+        ))}
+      </div>
+
+      {/* Task List */}
+      <AnimatePresence>
+        {filteredTasks.map((t) => (
+          <motion.div
+            key={t.id}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.3 }}
+            style={styles.task}
+          >
+            <span
+              onClick={() => toggleTask(t.id)}
+              style={{
+                ...styles.taskText,
+                textDecoration: t.completed ? "line-through" : "none",
+                color: t.completed ? "gray" : "black",
+              }}
+            >
+              {t.text}
+            </span>
+            <button onClick={() => deleteTask(t.id)} style={styles.deleteBtn}>
+              ❌
+            </button>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* Simple Inline Styles */
+const styles = {
+  container: {
+    maxWidth: 400,
+    margin: "50px auto",
+    padding: 20,
+    borderRadius: 10,
+    background: "#f9fafb",
+    fontFamily: "sans-serif",
+  },
+  inputBox: { display: "flex", gap: 10 },
+  input: { flex: 1, padding: 8 },
+  addBtn: { padding: "8px 12px" },
+  filters: { margin: "15px 0", display: "flex", gap: 8 },
+  filterBtn: { padding: "5px 10px", borderRadius: 5 },
+  task: {
+    display: "flex",
+    justifyContent: "space-between",
+    padding: 10,
+    background: "#fff",
+    marginBottom: 8,
+    borderRadius: 6,
+  },
+  taskText: { cursor: "pointer" },
+  deleteBtn: { background: "none", border: "none", cursor: "pointer" },
+};
